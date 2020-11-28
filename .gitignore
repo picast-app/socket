@@ -1,0 +1,10 @@
+node_modules
+.webpack
+.serverless
+/*.env*
+schema/gen
+tmp
+.DS_Store
+feed_cache
+/report.*
+*credentials*

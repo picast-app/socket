@@ -1,0 +1,43 @@
+service: socket
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'prod'}
+  timeout: 20
+  region: eu-west-1
+  apiGateway:
+    shouldStartNameWithService: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - ${ssm:/echo/ddb/podcasts/arn}
+        - ${ssm:/echo/ddb/episodes/arn}
+  environment:
+    stage: ${self:provider.stage}
+    PI_API_KEY: ${ssm:/echo/pi/key}
+    PI_API_SECRET: ${ssm:/echo/pi/secret~true}
+
+functions:
+  socket:
+    handler: src/handler.parse
+    events:
+      - http:
+          path: /get
+          method: post
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 1100
+    lambdaPort: 3005
+    noPrependStageInUrl: true
+  webpack:
+    webpackConfig: 'webpack.config.js'
+    packager: 'npm'
+    includeModules: true
