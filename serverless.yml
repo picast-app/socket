@@ -22,11 +22,14 @@ provider:
 
 functions:
   socket:
-    handler: src/handler.parse
+    handler: src/handler.socket
     events:
-      - http:
-          path: /get
-          method: post
+      - websocket:
+          route: $connect
+      - websocket:
+          route: $disconnect
+      - websocket:
+          route: $default
 
 plugins:
   - serverless-webpack
@@ -34,7 +37,6 @@ plugins:
 
 custom:
   serverless-offline:
-    httpPort: 1100
     lambdaPort: 3005
     noPrependStageInUrl: true
   webpack:
