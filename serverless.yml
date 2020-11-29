@@ -15,6 +15,12 @@ provider:
       Resource:
         - ${ssm:/echo/ddb/podcasts/arn}
         - ${ssm:/echo/ddb/episodes/arn}
+        - ${ssm:/echo/ddb/notifications/arn}
+    - Effect: Allow
+      Action:
+        - execute-api:Invoke
+      Resource:
+        - arn:aws:execute-api:eu-west-1:818838602878:0li5bdn7tg/*
   environment:
     stage: ${self:provider.stage}
     PI_API_KEY: ${ssm:/echo/pi/key}
@@ -30,6 +36,15 @@ functions:
           route: $disconnect
       - websocket:
           route: $default
+  episode:
+    handler: src/handler.episode
+    events:
+      - stream:
+          type: dynamodb
+          arn: ${ssm:/echo/ddb/episodes/streamarn}
+          batchSize: 200
+          batchWindow: 1
+          maximumRetryAttempts: 2
 
 plugins:
   - serverless-webpack
