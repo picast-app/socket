@@ -1,5 +1,6 @@
 import type { APIGatewayEvent, DynamoDBStreamEvent } from 'aws-lambda'
-import { ddb } from '~/utils/aws'
+import { ddb, unmarshall } from '~/utils/aws'
+import * as ws from '~/utils/ws'
 
 export const socket = async (event: APIGatewayEvent) => {
   if (event.requestContext.eventType === 'CONNECT')
@@ -88,11 +89,45 @@ export const episode = async (event: DynamoDBStreamEvent) => {
     console.log(`${v.eventName}`, v.dynamodb.NewImage ?? v.dynamodb.OldImage)
   })
 
-  const added = event.Records.filter(
+  const added: any[] = event.Records.filter(
     ({ eventName }) => eventName === 'INSERT'
-  ).map(({ dynamodb }) => dynamodb.NewImage)
+  ).map(({ dynamodb }) => unmarshall(dynamodb.NewImage))
 
-  console.log(added)
+  const byPodcast: Record<string, any> = {}
+
+  for (const ep of added) {
+    if (!(ep.pId in byPodcast)) byPodcast[ep.pId] = []
+    byPodcast[ep.pId].push(ep)
+  }
+
+  await Promise.all(
+    Object.entries(byPodcast).map(([k, v]) => notifyEpisodes(k, v))
+  )
+}
+
+async function notifyEpisodes(podcast: string, episodes: any[]) {
+  const { Items } = await ddb
+    .query({
+      TableName: 'echo_notifications',
+      KeyConditionExpression: 'pk = :pk ',
+      ExpressionAttributeValues: { ':pk': `ep_sub#${podcast}` },
+    })
+    .promise()
+
+  await Promise.all(
+    Items.map(({ sk }) =>
+      ws.send(sk, {
+        type: 'EPISODE_ADDED',
+        podcast,
+        episodes: episodes.map(({ id, title, published, url }) => ({
+          id,
+          title,
+          published,
+          url,
+        })),
+      })
+    )
+  )
 }
 
 function ttl(hours = 2) {

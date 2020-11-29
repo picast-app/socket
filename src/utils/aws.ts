@@ -10,3 +10,6 @@ export const ddb = new AWS.DynamoDB.DocumentClient(
       }
     : undefined
 )
+
+export const unmarshall = (response: any): any =>
+  AWS.DynamoDB.Converter.unmarshall(response)
