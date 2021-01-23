@@ -119,8 +119,8 @@ async function notifyEpisodes(podcast: string, episodes: any[]) {
       ws.send(sk, {
         type: 'EPISODE_ADDED',
         podcast,
-        episodes: episodes.map(({ id, title, published, url }) => ({
-          id,
+        episodes: episodes.map(({ eId, title, published, url }) => ({
+          id: eId,
           title,
           published,
           url,
