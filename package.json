@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": ".eslintrc.js",
+  "private": true,
   "scripts": {
     "start:offline": "sls offline",
-    "logs": "sls logs -f parser",
-    "logs:watch": "sls logs -f parser -t",
+    "logs": "sls logs -f socket",
+    "logs:watch": "sls logs -f socket -t",
     "deploy": "sls deploy",
-    "deploy:function": "sls deploy function -f parser",
+    "deploy:function": "sls deploy function -f socket",
     "prettier:check": "prettier --check \"./*.ts\" \"./**/*.ts\"",
     "prettier:write": "prettier --write \"./*.ts\" \"./**/*.ts\"",
     "eslint:check": "eslint . --ext .ts",
@@ -18,17 +19,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MathisBullinger/echo-parser.git"
+    "url": "git+https://github.com/picast-app/socket.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MathisBullinger/echo-parser/issues"
+    "url": "https://github.com/picast-app/socket/issues"
   },
-  "homepage": "https://github.com/MathisBullinger/echo-parser#readme",
+  "homepage": "https://github.com/picast-app/socket#readme",
   "dependencies": {
-    "@babel/runtime": "^7.12.5"
+    "@babel/runtime": "^7.12.5",
+    "@picast-app/db": "^1.4.2",
+    "typerpc": "^0.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

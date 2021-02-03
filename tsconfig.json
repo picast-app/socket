@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "types": ["node"],
-    "resolveJsonModule": true,
+    "target": "es6",
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "lib": ["ESNext", "DOM"],
+    "downlevelIteration": true,
     "allowJs": true,
-    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
     "paths": {
       "~/*": ["src/*"]
     }
@@ -19,6 +18,6 @@
     ".webpack",
     ".serverless",
     "prettier.config.js",
-    "webpack.config.js",
+    "webpack.config.js"
   ]
 }
