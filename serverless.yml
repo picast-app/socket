@@ -28,7 +28,7 @@ provider:
 
 functions:
   socket:
-    handler: src/handler.socket
+    handler: src/api.socket
     events:
       - websocket:
           route: $connect
@@ -37,12 +37,12 @@ functions:
       - websocket:
           route: $default
   episode:
-    handler: src/handler.episode
+    handler: src/episode.episode
     events:
       - stream:
           type: dynamodb
           arn: ${ssm:/echo/ddb/episodes/streamarn}
-          batchSize: 200
+          batchSize: 2000
           batchWindow: 1
           maximumRetryAttempts: 2
 

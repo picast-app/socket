@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "declaration": true,
-    "strict": true,
-    "lib": ["ESNext", "DOM"],
-    "downlevelIteration": true,
-    "allowJs": true,
-    "esModuleInterop": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "experimentalDecorators": true,
     "paths": {
       "~/*": ["src/*"]
     }
