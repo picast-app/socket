@@ -38,7 +38,7 @@ functions:
       - websocket:
           route: $default
   episode:
-    handler: src/episode.episode
+    handler: src/episode/index.episode
     events:
       - stream:
           type: dynamodb

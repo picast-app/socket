@@ -6,7 +6,6 @@ export const decode = (token: string) => {
     return jwt.verify(token, process.env.PUBLIC_KEY)
   } catch (e) {
     console.error(e)
-    if (e instanceof jwt.JsonWebTokenError) return
-    throw e
+    if (!(e instanceof jwt.JsonWebTokenError)) throw e
   }
 }

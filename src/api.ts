@@ -54,7 +54,7 @@ server.on('identify', async (token, caller) => {
   const { wsUser } = jwt.decode(token)
   if (wsUser)
     await db.notifications.put({
-      pk: `user#${wsUser}`,
+      pk: `user#ws#${wsUser}`,
       sk: caller as any,
       ttl: ttl(),
     })
