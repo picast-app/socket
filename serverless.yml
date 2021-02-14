@@ -25,6 +25,7 @@ provider:
     stage: ${self:provider.stage}
     PI_API_KEY: ${ssm:/echo/pi/key}
     PI_API_SECRET: ${ssm:/echo/pi/secret~true}
+    PUBLIC_KEY: ${ssm:/echo/api/PublicKey}
 
 functions:
   socket:

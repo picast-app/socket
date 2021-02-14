@@ -1,13 +1,14 @@
 import RPC from 'typerpc'
 import wsLambda from 'typerpc/transport/ws/lambda'
 import * as db from './utils/db'
+import * as jwt from './utils/jwt'
 
 const wsUrl = process.env.IS_OFFLINE
   ? 'http://localhost:3001'
   : 'socket.picast.app'
 
 export const server = new RPC({
-  add: { params: [Number, Number], result: Number },
+  identify: { params: String },
   subscribeEpisodes: { params: String },
 })
 
@@ -46,6 +47,17 @@ server.on('subscribeEpisodes', async (podcast, caller) => {
     }),
     db.notifications.update([`ws#${caller}`, 'meta']).add({ subs: [podcast] }),
   ])
+})
+
+// @ts-ignore
+server.on('identify', async (token, caller) => {
+  const { wsUser } = jwt.decode(token)
+  if (wsUser)
+    await db.notifications.put({
+      pk: `user#${wsUser}`,
+      sk: caller as any,
+      ttl: ttl(),
+    })
 })
 
 export const socket = async (event: any) => {
