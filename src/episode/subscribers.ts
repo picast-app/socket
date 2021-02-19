@@ -7,7 +7,9 @@ export default async function notify(
   podcast: string,
   episodes: DBRecord<typeof db['episodes']>[]
 ) {
+  console.log('notify subscribers')
   const users = await getSubscribers(podcast)
+  console.log({ users })
 
   const selection = episodes.map(({ eId, title, published, url }) => ({
     id: eId,

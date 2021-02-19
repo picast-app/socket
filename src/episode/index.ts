@@ -21,6 +21,10 @@ export const episode = async (event: DynamoDBStreamEvent) => {
     byPodcast[ep.pId].push(ep)
   }
 
+  console.log(
+    `${added.length} episodes added to ${Object.keys(byPodcast).join(', ')}`
+  )
+
   await Promise.all(
     Object.entries(byPodcast).map(([k, v]) => notifyEpisodes(k, v))
   )
@@ -32,6 +36,7 @@ async function notifyEpisodes(
 ) {
   const first = episodes.filter(({ firstPass }) => firstPass)
   const known = episodes.filter(({ firstPass }) => !firstPass)
+  console.log({ first, known })
   await Promise.all([
     first.length > 0 && firstPass(podcast, first),
     known.length > 0 && subscribers(podcast, known),
