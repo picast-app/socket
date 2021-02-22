@@ -9,12 +9,15 @@ export default async function notify(
 ) {
   const subscribers = await getWsEpisodeSubs(podcast)
 
-  const selection = episodes.map(({ eId, title, published, url }) => ({
-    id: eId,
-    title,
-    published,
-    url,
-  }))
+  const selection = episodes.map(
+    ({ eId, title, published, url, duration }) => ({
+      id: eId,
+      title,
+      published,
+      url,
+      duration,
+    })
+  )
 
   const inactive: string[] = []
 
