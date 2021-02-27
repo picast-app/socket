@@ -17,6 +17,7 @@ provider:
         - ${ssm:/echo/ddb/episodes/arn}
         - ${ssm:/echo/ddb/notifications/arn}
         - ${ssm:/echo/ddb/users/arn}
+        - ${ssm:/echo/ddb/playback/arn}
     - Effect: Allow
       Action:
         - execute-api:Invoke
