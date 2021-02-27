@@ -29,7 +29,7 @@
   "homepage": "https://github.com/picast-app/socket#readme",
   "dependencies": {
     "@babel/runtime": "^7.12.5",
-    "@picast-app/db": "^1.10.0",
+    "@picast-app/db": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
     "typerpc": "^0.7.0"
   },

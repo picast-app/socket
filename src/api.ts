@@ -10,6 +10,7 @@ const wsUrl = process.env.IS_OFFLINE
 export const server = new RPC({
   identify: { params: String },
   subscribeEpisodes: { params: String },
+  setCurrent: { params: [String, String, Number, String] },
 })
 
 const transport = wsLambda(wsUrl)
@@ -58,6 +59,23 @@ server.on('identify', async (token, caller) => {
       sk: caller as any,
       ttl: ttl(),
     })
+})
+
+// @ts-ignore
+server.on('setCurrent', async ([podcast, episode, position, token]) => {
+  const { wsUser } = jwt.decode(token) ?? {}
+  if (!wsUser) throw Error('unauthenticated')
+
+  await Promise.all([
+    db.users.update(`user#${wsUser}`, {
+      current: { podcast, episode, position },
+    }),
+    db.playback.put({
+      pk: `user#${wsUser}`,
+      sk: `${podcast}.${episode}`,
+      position,
+    }),
+  ])
 })
 
 export const socket = async (event: any) => {
