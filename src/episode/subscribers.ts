@@ -2,6 +2,7 @@ import * as db from '~/utils/db'
 import { server } from '~/api'
 import type { ClientSchema } from '~/api'
 import type { DBRecord } from 'ddbjs'
+import * as format from '~/utils/format'
 
 export default async function notify(
   podcast: string,
@@ -9,14 +10,8 @@ export default async function notify(
 ) {
   console.log('notify subscribers')
   const users = await getSubscribers(podcast)
-  console.log({ users })
 
-  const selection = episodes.map(({ eId, title, published, url }) => ({
-    id: eId,
-    title,
-    published,
-    url,
-  }))
+  const selection = episodes.map(format.episode)
 
   await Promise.all(users.map(user => notifyUser(user, podcast, selection)))
 }

@@ -1,5 +1,6 @@
 import * as db from '~/utils/db'
 import { server } from '~/api'
+import * as format from '~/utils/format'
 import type { ClientSchema } from '~/api'
 import type { DBRecord } from 'ddbjs'
 
@@ -9,15 +10,7 @@ export default async function notify(
 ) {
   const subscribers = await getWsEpisodeSubs(podcast)
 
-  const selection = episodes.map(
-    ({ eId, title, published, url, duration }) => ({
-      id: eId,
-      title,
-      published,
-      url,
-      duration,
-    })
-  )
+  const selection = episodes.map(format.episode)
 
   const inactive: string[] = []
 
