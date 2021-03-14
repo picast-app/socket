@@ -32,10 +32,14 @@ transport.on('connect', async id => {
 
 transport.on('disconnect', async id => {
   const con = await db.notifications.delete(`ws#${id}`, 'meta').returning('OLD')
-  if (!con?.subs?.length) return
-  await db.notifications.batchDelete(
-    ...con.subs.map(sub => [`ep_sub#${sub}`, id] as [string, string])
-  )
+  if (!con) return
+  await Promise.all([
+    con.user && db.notifications.delete(`user#ws#${con.user}`, id),
+    con.subs?.length &&
+      db.notifications.batchDelete(
+        ...con.subs.map(sub => [`ep_sub#${sub}`, id] as [string, string])
+      ),
+  ])
 })
 
 // @ts-ignore
@@ -53,12 +57,15 @@ server.on('subscribeEpisodes', async (podcast, caller) => {
 // @ts-ignore
 server.on('identify', async (token, caller) => {
   const { wsUser } = jwt.decode(token)
-  if (wsUser)
-    await db.notifications.put({
+  if (!wsUser) return
+  await Promise.all([
+    db.notifications.put({
       pk: `user#ws#${wsUser}`,
       sk: caller as any,
       ttl: ttl(),
-    })
+    }),
+    db.notifications.update([`ws#${caller}`, 'meta'], { user: wsUser }),
+  ])
 })
 
 // @ts-ignore
