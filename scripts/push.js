@@ -18,10 +18,7 @@ async function main() {
   const record = Items.filter(({ pk }) => /^user#wp/.test(pk))[0]
   const sub = JSON.parse(record.sub)
 
-  const res = await webpush.sendNotification(
-    sub,
-    JSON.stringify({ type: 'episode', payload: episode })
-  )
+  const res = await webpush.sendNotification(sub, JSON.stringify(payload))
   console.log(res)
 }
 
@@ -38,7 +35,17 @@ async function initPush() {
   webpush.setVapidDetails('mailto:picast@bullinger.dev', publicKey, privateKey)
 }
 
-const episode = {
-  podcast: '6v03',
-  episode: { title: (Math.random() * 1e6).toString(36) },
+const payload = {
+  type: 'episode',
+  payload: {
+    podcast: {
+      id: '50s3',
+      title: 'This Day in History Class',
+      artwork: 'https://img.picast.app/50s3/art-512.jpeg',
+    },
+    episode: {
+      id: 'qq06c05q1jz',
+      title: 'Julius Caesar assassinated / Ogaden War ended - March 15',
+    },
+  },
 }

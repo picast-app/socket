@@ -71,10 +71,32 @@ async function webPush(
   if (!users?.length) return
   console.log(`web push to ${users.length} users`)
 
-  const msgs = episodes.map(({ eId: id, title }) =>
+  const { id, title, covers } = await db.podcasts.get(podcast)
+
+  let artwork: string | undefined = undefined
+  if (covers?.length) {
+    try {
+      artwork = `https://img.picast.app/${
+        (covers as string[])
+          .filter(v => /\.jpeg$/.test(v))
+          .map(path => ({
+            path,
+            size: parseInt(path.split('.')[0].split('-').pop()!),
+          }))
+          .sort(({ size: a }, { size: b }) => a - b)[0].path
+      }`
+    } catch (error) {
+      console.error('failed to select artwork', { error })
+    }
+  }
+
+  const msgs = episodes.map(ep =>
     JSON.stringify({
-      type: 'episodes',
-      payload: { podcast, episode: { id, title } },
+      type: 'episode',
+      payload: {
+        podcast: { id, title, ...(artwork && { artwork }) },
+        episode: { id: ep.eId, title: ep.title },
+      },
     })
   )
 
