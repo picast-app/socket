@@ -28,6 +28,8 @@ provider:
     PI_API_KEY: ${ssm:/echo/pi/key}
     PI_API_SECRET: ${ssm:/echo/pi/secret~true}
     PUBLIC_KEY: ${ssm:/echo/api/PublicKey}
+    VAPID_PUBLIC: ${ssm:/echo/webpush/key/public}
+    VAPID_PRIVATE: ${ssm:/echo/webpush/key/private~true}
 
 functions:
   socket:

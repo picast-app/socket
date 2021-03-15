@@ -9,9 +9,7 @@ export default async function notify(
   episodes: DBRecord<typeof db['episodes']>[]
 ) {
   const subscribers = await getWsEpisodeSubs(podcast)
-
   const selection = episodes.map(format.episode)
-
   const inactive: string[] = []
 
   await Promise.all(
