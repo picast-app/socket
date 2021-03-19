@@ -3,12 +3,13 @@ import { server } from '~/api'
 import * as format from '~/utils/format'
 import type { ClientSchema } from '~/api'
 import type { DBRecord } from 'ddbjs'
+import * as ws from '~/utils/websocket'
 
 export default async function notify(
   podcast: string,
   episodes: DBRecord<typeof db['episodes']>[]
 ) {
-  const subscribers = await getWsEpisodeSubs(podcast)
+  const subscribers = await ws.getDirectClients(podcast)
   const selection = episodes.map(format.episode)
   const inactive: string[] = []
 
@@ -21,24 +22,5 @@ export default async function notify(
     )
   )
 
-  await disconnectInactiveWsSubs(podcast, inactive)
-}
-
-async function getWsEpisodeSubs(podcast: string): Promise<string[]> {
-  const { Items } = await db.notifications.client
-    .query({
-      TableName: 'echo_notifications',
-      KeyConditionExpression: 'pk = :pk ',
-      ExpressionAttributeValues: { ':pk': `ep_sub#${podcast}` },
-    })
-    .promise()
-
-  return Items.map(({ sk }) => sk)
-}
-
-async function disconnectInactiveWsSubs(podcast: string, subs: string[]) {
-  if (!subs.length) return
-  await db.notifications.batchDelete(
-    ...subs.map(id => [`ep_sub#${podcast}`, id] as [string, string])
-  )
+  await ws.disconnectInactive({ podcasts: { [podcast]: inactive } })
 }

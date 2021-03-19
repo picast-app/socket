@@ -4,6 +4,7 @@ import type { ClientSchema } from '~/api'
 import type { DBRecord } from 'ddbjs'
 import * as format from '~/utils/format'
 import webpush from '~/utils/webpush'
+import * as ws from '~/utils/websocket'
 
 export default async function notify(
   podcast: string,
@@ -35,32 +36,19 @@ async function notifyUser(
   podcast: string,
   episodes: Partial<DBRecord<typeof db['episodes']>>[]
 ) {
-  const { client, table } = db.notifications
-  const { Items } = await client
-    .query({
-      TableName: table,
-      KeyConditionExpression: 'pk = :pk ',
-      ExpressionAttributeValues: { ':pk': `user#ws#${user}` },
-    })
-    .promise()
-
-  const inactive: [string, string][] = []
+  const clients = await ws.getUserClients(user)
+  const inactive: string[] = []
 
   await Promise.all(
-    Items.map(({ pk, sk }) =>
+    clients.map(client =>
       server
-        .addConnection<ClientSchema>(sk)
+        .addConnection<ClientSchema>(client)
         .notify('episodeAdded', { podcast, episodes })
-        .catch(() => inactive.push([pk, sk]))
+        .catch(() => inactive.push(client))
     )
   )
 
-  await disconnectInactive(inactive)
-}
-
-async function disconnectInactive(clients: [string, string][]) {
-  if (!clients.length) return
-  await db.notifications.batchDelete(...clients)
+  await ws.disconnectInactive({ users: { [user]: inactive } })
 }
 
 async function webPush(
