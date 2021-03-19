@@ -50,6 +50,12 @@ functions:
           batchSize: 2000
           batchWindow: 1
           maximumRetryAttempts: 2
+  push:
+    handler: src/push.handler
+    events:
+      - sns:
+          arn: ${ssm:/echo/sns/clientpush/arn}
+          maximumRetryAttempts: 0
 
 plugins:
   - serverless-webpack

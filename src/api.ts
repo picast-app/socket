@@ -18,6 +18,7 @@ server.addTransport(transport, { default: true })
 
 const clientSchema = {
   episodeAdded: { params: { podcast: String, episodes: Object } },
+  hasCovers: { params: { id: String, covers: Object, palette: Object } },
 } as const
 export type ClientSchema = typeof clientSchema
 

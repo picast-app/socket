@@ -25,6 +25,15 @@ export async function getUserClients(user: string): Promise<string[]> {
   return Items.map(({ sk }) => sk)
 }
 
+export async function getPodSubClients(podcast: string): Promise<string[]> {
+  const record = await db.podsubs.get(`podcast#${podcast}`)
+  if (!record?.subscribers?.length) return []
+  const userClients = await Promise.all(
+    record.subscribers.map(user => getUserClients(user))
+  )
+  return userClients.flat()
+}
+
 export async function disconnectInactive({
   users = {},
   podcasts = {},
