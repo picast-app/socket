@@ -9,6 +9,7 @@ export const handler = async (event: SNSEvent) => {
     const msg = JSON.parse(record.Sns.Message)
     console.log(msg)
     if (msg.type === 'HAS_COVERS') tasks.push(pushCovers(msg))
+    if (msg.type === 'HAS_TOTAL') tasks.push(pushTotal(msg))
   }
 
   for (const res of await Promise.allSettled(tasks))
@@ -38,4 +39,19 @@ async function pushCovers({
         .notify('hasCovers', { id: podcast, covers, palette })
     )
   )
+}
+
+async function pushTotal(msg: { podcast: string; total: number }) {
+  const subs = await ws.getDirectClients(msg.podcast)
+
+  const inactive: string[] = []
+  await Promise.all(
+    subs.map(sub =>
+      server
+        .addConnection<ClientSchema>(sub)
+        .notify('hasAllEpisodes', msg)
+        .catch(() => inactive.push(sub))
+    )
+  )
+  await ws.disconnectInactive({ podcasts: { [msg.podcast]: inactive } })
 }

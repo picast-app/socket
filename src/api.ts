@@ -19,6 +19,7 @@ server.addTransport(transport, { default: true })
 const clientSchema = {
   episodeAdded: { params: { podcast: String, episodes: Object } },
   hasCovers: { params: { id: String, covers: Object, palette: Object } },
+  hasAllEpisodes: { params: { podcast: String, total: Number } },
 } as const
 export type ClientSchema = typeof clientSchema
 
@@ -82,6 +83,7 @@ server.on('setCurrent', async ([podcast, episode, position, token]) => {
       pk: `user#${wsUser}`,
       sk: `${podcast}.${episode}`,
       position,
+      lastUpdate: Date.now(),
     }),
   ])
 })
