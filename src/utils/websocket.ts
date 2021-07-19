@@ -9,7 +9,7 @@ export async function getDirectClients(podcast: string): Promise<string[]> {
     })
     .promise()
 
-  return Items.map(({ sk }) => sk)
+  return Items?.map(({ sk }) => sk) ?? []
 }
 
 export async function getUserClients(user: string): Promise<string[]> {
@@ -22,7 +22,7 @@ export async function getUserClients(user: string): Promise<string[]> {
     })
     .promise()
 
-  return Items.map(({ sk }) => sk)
+  return Items?.map(({ sk }) => sk) ?? []
 }
 
 export async function getPodSubClients(podcast: string): Promise<string[]> {

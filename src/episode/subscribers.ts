@@ -101,7 +101,7 @@ async function pushUser(user: string, msgs: string[]) {
     })
     .promise()
 
-  if (!Items.length) return
+  if (!Items?.length) return
   console.log(`web push ${user} to ${Items.length} clients`)
 
   await Promise.all(

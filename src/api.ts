@@ -56,28 +56,29 @@ server.on('subscribeEpisodes', async (podcast, caller) => {
 })
 
 server.on('identify', async (token, caller) => {
-  const { wsUser } = jwt.decode(token)
-  if (!wsUser) return
+  const decoded = jwt.decode(token)
+  if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser) return
   await Promise.all([
     db.notifications.put({
-      pk: `user#ws#${wsUser}`,
+      pk: `user#ws#${decoded.wsUser}`,
       sk: caller as any,
       ttl: ttl(),
     }),
-    db.notifications.update([`ws#${caller}`, 'meta'], { user: wsUser }),
+    db.notifications.update([`ws#${caller}`, 'meta'], { user: decoded.wsUser }),
   ])
 })
 
 server.on('setCurrent', async ([podcast, episode, position, token]) => {
-  const { wsUser } = jwt.decode(token) ?? {}
-  if (!wsUser) throw Error('unauthenticated')
+  const decoded = jwt.decode(token)
+  if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser)
+    throw Error('unauthenticated')
 
   await Promise.all([
-    db.users.update(`user#${wsUser}`, {
+    db.users.update(`user#${decoded.wsUser}`, {
       current: { podcast, episode, position },
     }),
     db.playback.put({
-      pk: `user#${wsUser}`,
+      pk: `user#${decoded.wsUser}`,
       sk: `${podcast}.${episode}`,
       position,
       lastUpdate: new Date().toISOString(),

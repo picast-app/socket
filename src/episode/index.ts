@@ -32,7 +32,7 @@ async function notifyEpisodes(
 ) {
   const first = episodes.filter(({ firstPass }) => firstPass)
   const known = episodes.filter(({ firstPass }) => !firstPass)
-  await Promise.all([
+  await Promise.all<any>([
     first.length > 0 && firstPass(podcast, first),
     known.length > 0 && subscribers(podcast, known),
   ])
