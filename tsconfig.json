@@ -8,7 +8,10 @@
     "types": ["node"],
     "resolveJsonModule": true,
     "allowJs": true,
+    "strict": true,
+    "lib": ["ESNext"],
     "experimentalDecorators": true,
+    "downlevelIteration": true,
     "paths": {
       "~/*": ["src/*"]
     }
