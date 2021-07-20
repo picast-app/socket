@@ -30,6 +30,7 @@
   "dependencies": {
     "@babel/runtime": "^7.12.5",
     "@picast-app/db": "^2.13.0",
+    "@picast-app/protocols": "^0.0.2",
     "jsonwebtoken": "^8.5.1",
     "typerpc": "^0.8.0",
     "web-push": "^3.4.4"

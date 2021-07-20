@@ -2,6 +2,8 @@ import RPC from 'typerpc'
 import wsLambda from 'typerpc/transport/ws/lambda'
 import * as db from './utils/db'
 import * as jwt from './utils/jwt'
+import * as sync from '@picast-app/protocols/playbackSync'
+import handleSyncMsg from './playSync'
 
 const wsUrl = process.env.IS_OFFLINE
   ? 'http://localhost:3001'
@@ -11,6 +13,7 @@ export const server = new RPC({
   identify: { params: String },
   subscribeEpisodes: { params: String },
   setCurrent: { params: [String, String, Number, String] },
+  playSync: { params: { msg: Object, token: String } },
 })
 
 const transport = wsLambda(wsUrl)
@@ -84,6 +87,18 @@ server.on('setCurrent', async ([podcast, episode, position, token]) => {
       lastUpdate: new Date().toISOString(),
     }),
   ])
+})
+
+const isSyncMsg = (msg: any): msg is sync.Message<sync.Type> =>
+  (typeof msg === 'object' && msg !== null && typeof msg.type !== 'number') ||
+  typeof msg.time !== 'string'
+
+server.on('playSync', async ({ msg, token }) => {
+  const decoded = jwt.decode(token)
+  if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser)
+    throw Error('unauthenticated')
+  if (!isSyncMsg(msg)) throw Error('ill-formed sync message')
+  await handleSyncMsg(msg, decoded.wsUser)
 })
 
 export const socket = async (event: any) => {
