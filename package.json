@@ -29,10 +29,11 @@
   "homepage": "https://github.com/picast-app/socket#readme",
   "dependencies": {
     "@babel/runtime": "^7.12.5",
-    "@picast-app/db": "^2.13.0",
-    "@picast-app/protocols": "^0.1.0",
+    "@picast-app/db": "^2.15.0",
+    "@picast-app/protocols": "^0.4.0",
+    "ddbjs": "^0.17.0",
     "jsonwebtoken": "^8.5.1",
-    "typerpc": "^0.8.0",
+    "typerpc": "^0.9.1",
     "web-push": "^3.4.4"
   },
   "devDependencies": {

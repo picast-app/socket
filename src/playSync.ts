@@ -8,11 +8,13 @@ export default async function handleMessage(msg: Message<Type>, user: string) {
 }
 
 const handlers: { [K in Type]?: λ<[msg: any, user: string]> } = {
-  [Type.SET_ACTIVE]: setActive,
+  SET_ACTIVE: setActive,
+  SET_PLAYBACK_TIME: setTime,
 }
 
-async function setActive(msg: Message<Type.SET_ACTIVE>, user: string) {
-  assert(msg.id.length === 2 && msg.id.every(v => v && typeof v === 'string'))
+async function setActive(msg: Message<'SET_ACTIVE'>, user: string) {
+  assertEpisodeId(msg)
+  assert(user)
   await Promise.all([
     db.users.update(`user#${user}`, {
       current: {
@@ -28,4 +30,26 @@ async function setActive(msg: Message<Type.SET_ACTIVE>, user: string) {
       lastUpdate: new Date().toISOString(),
     }),
   ])
+}
+
+async function setTime(msg: Message<'SET_PLAYBACK_TIME'>, user: string) {
+  assertEpisodeId(msg)
+  assert(user)
+
+  await Promise.all([
+    db.playback.update([`user#${user}`, msg.id.join('.')], {
+      position: msg.pos,
+      lastUpdate: new Date().toISOString(),
+    }),
+    db.users
+      .update(`user#${user}`, { current: { position: msg.pos } })
+      .if({ path: 'current.episode' }, '=', msg.id[1])
+      .catch(() => {}),
+  ])
+}
+
+function assertEpisodeId(msg: any) {
+  assert(
+    msg.id.length === 2 && msg.id.every((v: any) => v && typeof v === 'string')
+  )
 }
