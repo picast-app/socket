@@ -1,9 +1,7 @@
 import type { DynamoDBStreamEvent } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
-import * as db from '~/utils/db'
 import firstPass from './firstPass'
 import subscribers from './subscribers'
-import type { DBRecord } from 'ddbjs'
 
 export const episode = async (event: DynamoDBStreamEvent) => {
   const added: any[] = event.Records.filter(
@@ -26,10 +24,7 @@ export const episode = async (event: DynamoDBStreamEvent) => {
   )
 }
 
-async function notifyEpisodes(
-  podcast: string,
-  episodes: DBRecord<typeof db['episodes']>[]
-) {
+async function notifyEpisodes(podcast: string, episodes: any[]) {
   const first = episodes.filter(({ firstPass }) => firstPass)
   const known = episodes.filter(({ firstPass }) => !firstPass)
   await Promise.all<any>([

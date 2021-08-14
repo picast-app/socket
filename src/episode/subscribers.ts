@@ -1,15 +1,11 @@
 import * as db from '~/utils/db'
 import { server } from '~/api'
 import type { ClientSchema } from '~/api'
-import type { DBRecord } from 'ddbjs'
 import * as format from '~/utils/format'
 import webpush from '~/utils/webpush'
 import * as ws from '~/utils/websocket'
 
-export default async function notify(
-  podcast: string,
-  episodes: DBRecord<typeof db['episodes']>[]
-) {
+export default async function notify(podcast: string, episodes: any[]) {
   console.log('notify subscribers')
 
   const record = await db.podsubs.get(`podcast#${podcast}`)
@@ -21,21 +17,13 @@ export default async function notify(
   ])
 }
 
-async function wsPush(
-  users: string[],
-  podcast: string,
-  episodes: DBRecord<typeof db['episodes']>[]
-) {
+async function wsPush(users: string[], podcast: string, episodes: any[]) {
   if (!users?.length) return
   const selection = episodes.map(format.episode)
   await Promise.all(users.map(user => notifyUser(user, podcast, selection)))
 }
 
-async function notifyUser(
-  user: string,
-  podcast: string,
-  episodes: Partial<DBRecord<typeof db['episodes']>>[]
-) {
+async function notifyUser(user: string, podcast: string, episodes: any[]) {
   const clients = await ws.getUserClients(user)
   const inactive: string[] = []
 
@@ -51,11 +39,7 @@ async function notifyUser(
   await ws.disconnectInactive({ users: { [user]: inactive } })
 }
 
-async function webPush(
-  users: string[],
-  podcast: string,
-  episodes: DBRecord<typeof db['episodes']>[]
-) {
+async function webPush(users: string[], podcast: string, episodes: any[]) {
   if (!users?.length) return
   console.log(`web push to ${users.length} users`)
 
