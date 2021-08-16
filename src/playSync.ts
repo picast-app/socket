@@ -42,7 +42,7 @@ async function setTime(msg: Message<'SET_PLAYBACK_TIME'>, user: string) {
       lastUpdate: new Date().toISOString(),
     }),
     db.users
-      .update(`user#${user}`, { current: { position: msg.pos } })
+      .update(`user#${user}`, { 'current.position': msg.pos })
       .if({ path: 'current.episode' }, '=', msg.id[1])
       .catch(() => {}),
   ])
