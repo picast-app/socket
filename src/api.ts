@@ -61,6 +61,7 @@ server.on('subscribeEpisodes', async (podcast, caller) => {
 server.on('identify', async (token, caller) => {
   const decoded = jwt.decode(token)
   if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser) return
+  if (!caller) throw Error('caller missing')
   await Promise.all([
     db.notifications.put({
       pk: `user#ws#${decoded.wsUser}`,
