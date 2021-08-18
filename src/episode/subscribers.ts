@@ -11,14 +11,18 @@ export default async function notify(podcast: string, episodes: any[]) {
   const record = await db.podsubs.get(`podcast#${podcast}`)
   if (!record) return
 
-  await Promise.allSettled([
+  const results = await Promise.allSettled([
     wsPush(record.subscribers, podcast, episodes),
     webPush(record.wpSubs, podcast, episodes),
   ])
+  for (let i = 0; i < results.length; i++)
+    if (results[i].status === 'rejected')
+      console.error(`${i === 0 ? 'websocket' : 'web'} push failed:`, results[i])
 }
 
 async function wsPush(users: string[], podcast: string, episodes: any[]) {
   if (!users?.length) return
+  console.log(`ws push ${episodes.length} episodes to ${users.length} users`)
   const selection = episodes.map(format.episode)
   await Promise.all(users.map(user => notifyUser(user, podcast, selection)))
 }
@@ -26,16 +30,21 @@ async function wsPush(users: string[], podcast: string, episodes: any[]) {
 async function notifyUser(user: string, podcast: string, episodes: any[]) {
   const clients = await ws.getUserClients(user)
   const inactive: string[] = []
+  console.log(`user ${user} has ${clients.length} ws clients`)
 
   await Promise.all(
     clients.map(client =>
       server
         .addConnection<ClientSchema>(client)
         .notify('episodeAdded', { podcast, episodes })
-        .catch(() => inactive.push(client))
+        .catch(e => {
+          console.warn(e)
+          inactive.push(client)
+        })
     )
   )
 
+  console.log(`${inactive.length}/${clients.length} clients inactive`)
   await ws.disconnectInactive({ users: { [user]: inactive } })
 }
 
