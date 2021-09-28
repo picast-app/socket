@@ -33,7 +33,7 @@ export type ClientSchema = typeof clientSchema
 transport.on('connect', async id => {
   console.log('connect', id)
   try {
-    await db.notifications.put({ pk: `ws#${id}`, sk: 'meta', ttl: ttl() })
+    await db.notifications.put({ pk: `ws#${id}`, sk: 'meta', ttl: ttl(5 / 60) })
   } catch (e) {
     console.error('connect failed', e)
   }
@@ -84,12 +84,13 @@ async function storeWSUser(user: string, address: string) {
 }
 
 async function storeWSSession(session: string | undefined, address: string) {
-  if (!session) return
+  if (!session) return console.warn('no session')
   const existing: any = await db.notifications
     .put({ pk: `session#ws#${session}`, sk: 'session', address })
     .returning('OLD')
 
-  if (!existing?.podcasts?.length) return
+  if (!existing?.podcasts?.length)
+    return console.log('no push queued for session', { address, existing })
 
   const episodes = await Promise.all(
     (existing.podcasts as string[]).map(id => new Podcast(id).readEpisodes())

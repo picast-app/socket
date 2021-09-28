@@ -12,7 +12,7 @@ export async function pushToClients(clients: string[], episodes: Episode[]) {
   )
   res
     .filter(predicate.isRejected)
-    .forEach(v => console.error('failed to push to client', { ...v, clients }))
+    .forEach(error => console.error('failed to push to client', { error }))
 }
 
 async function pushToClient(
@@ -21,7 +21,11 @@ async function pushToClient(
 ) {
   const con = server.addConnection<ClientSchema>(client)
   const podcasts = Array.from(new Set(batches.flatMap(v => Object.keys(v))))
-  await Promise.all(batches.map(batch => con.notify('addEpisodes', batch)))
+  console.log(`push ${batches.length} to client`)
+  for (const part of batch(batches, 50)) {
+    await Promise.all(part.map(v => con.notify('addEpisodes', v)))
+  }
+  console.log('seed complete', { podcasts })
   await con.notify('seedComplete', { podcasts })
 }
 
@@ -63,3 +67,8 @@ const byKey = <T, K extends keyof T>(
   }
   return dict
 }
+
+const batch = <T>(list: T[], size: number): T[][] =>
+  [...Array(Math.ceil(list.length / size))].map((_, i) =>
+    list.slice(i * size, (i + 1) * size)
+  )

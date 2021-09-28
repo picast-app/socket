@@ -78,6 +78,7 @@ async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
         podcasts: msg.podcasts,
       })
       .cast({ podcasts: 'Set' })
+    console.log('wait for session', { session: decoded.session })
     return
   }
 
