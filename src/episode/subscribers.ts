@@ -4,8 +4,9 @@ import type { ClientSchema } from '~/api'
 import * as format from '~/utils/format'
 import webpush from '~/utils/webpush'
 import * as ws from '~/utils/websocket'
+import type { Episode } from '~/utils/db'
 
-export default async function notify(podcast: string, episodes: any[]) {
+export default async function notify(podcast: string, episodes: Episode[]) {
   console.log('notify subscribers')
 
   const record = await db.podsubs.get(`podcast#${podcast}`)

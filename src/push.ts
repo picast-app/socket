@@ -1,6 +1,10 @@
 import { server, ClientSchema } from '~/api'
 import * as ws from '~/utils/websocket'
 import type { SNSEvent } from 'aws-lambda'
+import * as db from '~/utils/db'
+import * as jwt from './utils/jwt'
+import { pushToClients } from './utils/pushEpisodes'
+import { Podcast } from './podcast'
 
 export const handler = async (event: SNSEvent) => {
   const tasks: Promise<any>[] = []
@@ -10,6 +14,7 @@ export const handler = async (event: SNSEvent) => {
     console.log(msg)
     if (msg.type === 'HAS_COVERS') tasks.push(pushCovers(msg))
     if (msg.type === 'HAS_TOTAL') tasks.push(pushTotal(msg))
+    if (msg.type === 'PUSH_EPISODES') tasks.push(pushEpisodes(msg))
   }
 
   for (const res of await Promise.allSettled(tasks))
@@ -54,4 +59,22 @@ async function pushTotal(msg: { podcast: string; total: number }) {
     )
   )
   await ws.disconnectInactive({ podcasts: { [msg.podcast]: inactive } })
+}
+
+async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
+  const decoded = jwt.decode(msg.userToken)
+  if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser)
+    return console.error('invalid userToken', { decoded })
+
+  const { items, lastKey } = await db.notifications
+    .query(`user#ws#${decoded.wsUser}`)
+    .select('sk')
+    .limit(20)
+  if (lastKey) console.warn('ws sessions >= 20', { lastKey })
+
+  const clients = items.map(({ sk }) => sk)
+  const episodes = await Promise.all(
+    msg.podcasts.map(id => new Podcast(id).readEpisodes())
+  )
+  await pushToClients(clients, episodes.flat())
 }

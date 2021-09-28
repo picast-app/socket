@@ -31,8 +31,9 @@
     "@babel/runtime": "^7.12.5",
     "@picast-app/db": "^2.15.0",
     "@picast-app/protocols": "^0.4.0",
-    "ddbjs": "^0.17.0",
+    "ddbjs": "^0.18.1",
     "jsonwebtoken": "^8.5.1",
+    "snatchblock": "^0.8.0",
     "typerpc": "^0.9.2",
     "web-push": "^3.4.4"
   },

@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "paths": {

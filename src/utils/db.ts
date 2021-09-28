@@ -9,3 +9,15 @@ export const { notifications, podcasts, episodes, podsubs, users, playback } =
         }
       : undefined
   )
+
+export type Episode = {
+  pId: string
+  eId: string
+  url?: string
+  guid?: string
+  published?: string
+  title?: string
+  shownotes?: string
+  firstPass?: boolean
+  duration?: number
+}

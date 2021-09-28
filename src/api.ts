@@ -21,6 +21,8 @@ server.addTransport(transport, { default: true })
 
 const clientSchema = {
   episodeAdded: { params: { podcast: String, episodes: Object } },
+  addEpisodes: { params: Object },
+  seedComplete: { params: { podcasts: Object } },
   hasCovers: { params: { id: String, covers: Object, palette: Object } },
   hasAllEpisodes: { params: { podcast: String, total: Number } },
 } as const
