@@ -63,18 +63,26 @@ async function pushTotal(msg: { podcast: string; total: number }) {
 
 async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
   const decoded = jwt.decode(msg.userToken)
-  if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser)
+  if (typeof decoded !== 'object' || decoded === null || !decoded.session)
     return console.error('invalid userToken', { decoded })
 
-  const { items, lastKey } = await db.notifications
-    .query(`user#ws#${decoded.wsUser}`)
-    .select('sk')
-    .limit(20)
-  if (lastKey) console.warn('ws sessions >= 20', { lastKey })
+  const session: any = await db.notifications.get(
+    `session#ws${decoded.session}`,
+    'session'
+  )
+  if (!session?.address) {
+    await db.notifications
+      .put({
+        pk: `session#ws#${decoded.session}`,
+        sk: 'session',
+        podcasts: msg.podcasts,
+      })
+      .cast({ podcasts: 'Set' })
+    return
+  }
 
-  const clients = items.map(({ sk }) => sk)
   const episodes = await Promise.all(
     msg.podcasts.map(id => new Podcast(id).readEpisodes())
   )
-  await pushToClients(clients, episodes.flat())
+  await pushToClients([session.address], episodes.flat())
 }

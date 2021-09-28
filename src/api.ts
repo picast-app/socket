@@ -4,6 +4,8 @@ import * as db from './utils/db'
 import * as jwt from './utils/jwt'
 import * as sync from '@picast-app/protocols/playbackSync'
 import handleSyncMsg from './playSync'
+import { pushToClients } from '~/utils/pushEpisodes'
+import { Podcast } from '~/podcast'
 
 const wsUrl = process.env.IS_OFFLINE
   ? 'http://localhost:3001'
@@ -65,14 +67,35 @@ server.on('identify', async (token, caller) => {
   if (typeof decoded !== 'object' || decoded === null || !decoded.wsUser) return
   if (!caller) throw Error('caller missing')
   await Promise.all([
-    db.notifications.put({
-      pk: `user#ws#${decoded.wsUser}`,
-      sk: caller as any,
-      ttl: ttl(),
-    }),
-    db.notifications.update([`ws#${caller}`, 'meta'], { user: decoded.wsUser }),
+    storeWSUser(decoded.wsUser, caller as any),
+    storeWSSession(decoded.session, caller as any),
   ])
 })
+
+async function storeWSUser(user: string, address: string) {
+  await Promise.all([
+    db.notifications.put({
+      pk: `user#ws#${user}`,
+      sk: address,
+      ttl: ttl(),
+    }),
+    db.notifications.update([`ws#${address}`, 'meta'], { user }),
+  ])
+}
+
+async function storeWSSession(session: string | undefined, address: string) {
+  if (!session) return
+  const existing: any = await db.notifications
+    .put({ pk: `session#ws#${session}`, sk: 'session', address })
+    .returning('OLD')
+
+  if (!existing?.podcasts?.length) return
+
+  const episodes = await Promise.all(
+    (existing.podcasts as string[]).map(id => new Podcast(id).readEpisodes())
+  )
+  await pushToClients([address], episodes.flat())
+}
 
 server.on('setCurrent', async ([podcast, episode, position, token]) => {
   const decoded = jwt.decode(token)

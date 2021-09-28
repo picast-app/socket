@@ -3,6 +3,7 @@ import type { Episode } from '~/podcast'
 import * as predicate from 'snatchblock/predicate'
 
 export async function pushToClients(clients: string[], episodes: Episode[]) {
+  if (!clients.length || !episodes.length) return
   const batches = batchEpisodes(episodes)
   const byPod = batches.map(batch => byKey(batch, 'podcast'))
 
