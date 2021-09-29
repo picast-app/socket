@@ -66,21 +66,15 @@ async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
   if (typeof decoded !== 'object' || decoded === null || !decoded.session)
     return console.error('invalid userToken', { decoded })
 
-  const session: any = await db.notifications.get(
-    `session#ws${decoded.session}`,
-    'session'
-  )
-  if (!session?.address) {
-    await db.notifications
-      .put({
-        pk: `session#ws#${decoded.session}`,
-        sk: 'session',
-        podcasts: msg.podcasts,
-      })
-      .cast({ podcasts: 'Set' })
-    console.log('wait for session', { session: decoded.session })
-    return
-  }
+  const session: any = await db.notifications
+    .put({
+      pk: `session#ws#${decoded.session}`,
+      sk: 'session',
+      podcasts: msg.podcasts,
+    })
+    .returning('OLD')
+
+  if (!session) return console.log('wait for session')
 
   const episodes = await Promise.all(
     msg.podcasts.map(id => new Podcast(id).readEpisodes())

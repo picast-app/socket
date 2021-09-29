@@ -6,6 +6,7 @@ export async function pushToClients(clients: string[], episodes: Episode[]) {
   if (!clients.length || !episodes.length) return
   const batches = batchEpisodes(episodes)
   const byPod = batches.map(batch => byKey(batch, 'podcast'))
+  console.log(`push ${episodes.length} episodes in ${byPod.length} batches`)
 
   const res = await Promise.allSettled(
     clients.map(id => pushToClient(id, byPod))
@@ -21,16 +22,24 @@ async function pushToClient(
 ) {
   const con = server.addConnection<ClientSchema>(client)
   const podcasts = Array.from(new Set(batches.flatMap(v => Object.keys(v))))
-  console.log(`push ${batches.length} to client`)
-  for (const part of batch(batches, 50)) {
-    await Promise.all(part.map(v => con.notify('addEpisodes', v)))
-  }
+
+  await Promise.all(batches.map(batch => sendBatch(con, batch)))
+
   console.log('seed complete', { podcasts })
   await con.notify('seedComplete', { podcasts })
 }
 
+async function sendBatch(con: any, batch: any) {
+  try {
+    await con.notify('addEpisodes', batch)
+  } catch (error) {
+    console.error('batch failed', { error, batch })
+    throw error
+  }
+}
+
 function batchEpisodes(episodes: Episode[]): Episode[][] {
-  const bufferBytes = 0.1 * 1024
+  const bufferBytes = 0.5 * 1024
   const limit = 32 * 1024 - bufferBytes
 
   const batches: [number, Episode[]][] = [[0, []]]
@@ -68,7 +77,7 @@ const byKey = <T, K extends keyof T>(
   return dict
 }
 
-const batch = <T>(list: T[], size: number): T[][] =>
-  [...Array(Math.ceil(list.length / size))].map((_, i) =>
-    list.slice(i * size, (i + 1) * size)
-  )
+// const batch = <T>(list: T[], size: number): T[][] =>
+//   [...Array(Math.ceil(list.length / size))].map((_, i) =>
+//     list.slice(i * size, (i + 1) * size)
+//   )
