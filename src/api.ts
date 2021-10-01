@@ -1,5 +1,5 @@
 import RPC from 'typerpc'
-import wsLambda from 'typerpc/transport/ws/lambda'
+import wsLambda from '~/transport'
 import * as db from './utils/db'
 import * as jwt from './utils/jwt'
 import * as sync from '@picast-app/protocols/playbackSync'
