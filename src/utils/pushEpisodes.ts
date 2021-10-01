@@ -50,8 +50,8 @@ async function sendBatch(con: any, batch: any) {
 }
 
 function batchEpisodes(episodes: Episode[]): Episode[][] {
-  const bufferBytes = 10 * 1024
-  const limit = 128 * 1024 - bufferBytes
+  const bufferBytes = 0.5 * 1024
+  const limit = 32 * 1024 - bufferBytes
 
   const batches: [number, Episode[]][] = [[0, []]]
 
