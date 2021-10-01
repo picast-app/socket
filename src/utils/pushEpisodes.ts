@@ -6,22 +6,25 @@ import { performance } from 'perf_hooks'
 export async function pushToClients(clients: string[], episodes: Episode[]) {
   if (!clients.length || !episodes.length) return
 
-  const t0 = performance.now()
+  const t0a = performance.now()
 
   const batches = batchEpisodes(episodes)
   const byPod = batches.map(batch => byKey(batch, 'podcast'))
-
-  const dt = Math.round(performance.now() - t0)
   console.log(
-    `created ${byPod.length} batches from ${episodes.length} episodes in ${dt} ms`
+    `created ${byPod.length} batches from ${
+      episodes.length
+    } episodes in ${Math.round(performance.now() - t0a)} ms`
   )
 
+  const t0b = performance.now()
   const res = await Promise.allSettled(
     clients.map(id => pushToClient(id, byPod))
   )
   res
     .filter(predicate.isRejected)
     .forEach(error => console.error('failed to push to client', { error }))
+
+  console.log(`pushed in ${Math.round(performance.now() - t0b)} ms`)
 }
 
 async function pushToClient(
@@ -47,7 +50,7 @@ async function sendBatch(con: any, batch: any) {
 }
 
 function batchEpisodes(episodes: Episode[]): Episode[][] {
-  const bufferBytes = 1 * 1024
+  const bufferBytes = 10 * 1024
   const limit = 128 * 1024 - bufferBytes
 
   const batches: [number, Episode[]][] = [[0, []]]

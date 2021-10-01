@@ -92,7 +92,11 @@ async function storeWSSession(session: string | undefined, address: string) {
   if (!existing?.podcasts?.length)
     return console.log('no push queued for session', { address, existing })
 
-  await pushToClients([address], await Podcast.episodes(existing.podcasts))
+  const [episodes] = await Promise.all([
+    Podcast.episodes(existing.podcasts),
+    db.notifications.delete(`session#ws#${session}`, 'session'),
+  ])
+  await pushToClients([address], episodes)
 }
 
 server.on('setCurrent', async ([podcast, episode, position, token]) => {

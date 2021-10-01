@@ -76,5 +76,9 @@ async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
 
   if (!session) return console.log('wait for session')
 
-  await pushToClients([session.address], await Podcast.episodes(msg.podcasts))
+  const [episodes] = await Promise.all([
+    Podcast.episodes(msg.podcasts),
+    db.notifications.delete(`session#ws#${decoded.session}`, 'session'),
+  ])
+  await pushToClients([session.address], episodes)
 }
