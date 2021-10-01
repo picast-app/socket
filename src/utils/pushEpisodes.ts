@@ -39,8 +39,8 @@ async function sendBatch(con: any, batch: any) {
 }
 
 function batchEpisodes(episodes: Episode[]): Episode[][] {
-  const bufferBytes = 0.5 * 1024
-  const limit = 32 * 1024 - bufferBytes
+  const bufferBytes = 5 * 1024
+  const limit = 128 * 1024 - bufferBytes
 
   const batches: [number, Episode[]][] = [[0, []]]
 
@@ -76,8 +76,3 @@ const byKey = <T, K extends keyof T>(
   }
   return dict
 }
-
-// const batch = <T>(list: T[], size: number): T[][] =>
-//   [...Array(Math.ceil(list.length / size))].map((_, i) =>
-//     list.slice(i * size, (i + 1) * size)
-//   )
