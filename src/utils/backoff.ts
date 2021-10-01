@@ -16,7 +16,7 @@ export const backoff = <T extends λ>(
     } catch (err) {
       const delay = 2 ** retries * 100
       if (!shouldRetry(err, delay)) throw err
-      console.log(`retry (${retries}) after ${delay} ms`)
+      console.log(`retry (${retries + 1}) after ${delay} ms`)
       await sleep(delay)
       return await attempt(retries + 1, ...args)
     }

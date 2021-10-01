@@ -1,12 +1,20 @@
 import { server, ClientSchema } from '~/api'
 import type { Episode } from '~/podcast'
 import * as predicate from 'snatchblock/predicate'
+import { performance } from 'perf_hooks'
 
 export async function pushToClients(clients: string[], episodes: Episode[]) {
   if (!clients.length || !episodes.length) return
+
+  const t0 = performance.now()
+
   const batches = batchEpisodes(episodes)
   const byPod = batches.map(batch => byKey(batch, 'podcast'))
-  console.log(`push ${episodes.length} episodes in ${byPod.length} batches`)
+
+  const dt = Math.round(performance.now() - t0)
+  console.log(
+    `created ${byPod.length} batches from ${episodes.length} episodes in ${dt} ms`
+  )
 
   const res = await Promise.allSettled(
     clients.map(id => pushToClient(id, byPod))
@@ -39,14 +47,14 @@ async function sendBatch(con: any, batch: any) {
 }
 
 function batchEpisodes(episodes: Episode[]): Episode[][] {
-  const bufferBytes = 5 * 1024
+  const bufferBytes = 1 * 1024
   const limit = 128 * 1024 - bufferBytes
 
   const batches: [number, Episode[]][] = [[0, []]]
 
   const encoder = new TextEncoder()
   for (const episode of episodes) {
-    const size = encoder.encode(JSON.stringify(episode) + 10).byteLength
+    const size = encoder.encode(JSON.stringify(episode)).byteLength + 5
 
     const last = batches[batches.length - 1]
     if (last[0] + size > limit) {

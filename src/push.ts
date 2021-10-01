@@ -76,8 +76,5 @@ async function pushEpisodes(msg: { podcasts: string[]; userToken: string }) {
 
   if (!session) return console.log('wait for session')
 
-  const episodes = await Promise.all(
-    msg.podcasts.map(id => new Podcast(id).readEpisodes())
-  )
-  await pushToClients([session.address], episodes.flat())
+  await pushToClients([session.address], await Podcast.episodes(msg.podcasts))
 }
